@@ -22,6 +22,24 @@ local get_client = function(server_name)
     else
       local server = lsp_config[server_name]
       config = server.make_config(vim.loop.cwd())
+      
+      -- For intelephense, ensure it uses the correct PHP binary
+      if server_name == "intelephense" then
+        local php_bin = require("laravel.utils.php_bin").get_php_bin()
+        if config.settings then
+          config.settings.intelephense = config.settings.intelephense or {}
+          config.settings.intelephense.environment = config.settings.intelephense.environment or {}
+          config.settings.intelephense.environment.phpExecutable = php_bin
+        else
+          config.settings = {
+            intelephense = {
+              environment = {
+                phpExecutable = php_bin
+              }
+            }
+          }
+        end
+      end
     end
 
     local client_id = vim.lsp.start(config)
